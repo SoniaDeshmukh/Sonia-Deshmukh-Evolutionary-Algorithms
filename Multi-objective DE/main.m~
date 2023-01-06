@@ -1,0 +1,154 @@
+function main
+    diary('/home/nk/Desktop/SONIA/DEMO/results/file1/DEMOOutput.txt');
+    tic
+    clc;                       % clears the window screen
+    clear all;                 % clears the workspace and variables
+    L=csvread('file1.txt');
+    [row,col]=size(L);         % dimensions of Event log matrix L
+    [n,t]=size(unique(L));     % to find the unique activites in event log and storing it in variable n
+    if ismember(0,L) == 1
+        n=n-1;
+    end
+    popSize=6;
+    run=2;
+    iterArray=zeros(1,run);
+    timeArray=zeros(1,run);
+    
+    for r=1:run
+        tic;
+        %tic
+        %disp('......... initialization ............');
+        [population,genArray,compArray,precArray,simArray,D] = Initialization(L,row,col,n,popSize);    % population is the initial population used for genetic algorithm
+        %toc
+        prevGen=zeros(1,2*popSize);
+            prevComp=zeros(1,2*popSize);
+            prevPrec=zeros(1,2*popSize);
+            prevSim=zeros(1,2*popSize);
+        count=0;        
+       for m=1:5    
+        
+        %tic
+       % disp('.........Differencial evolution ............');
+        [pool,gen1Array,comp1Array,prec1Array,sim1Array] = DE(population,popSize,L,row,col,n);      
+        %toc
+        
+         %tic
+       % disp('.........recombination ............');
+        [childpop,childgenArray,childcompArray,childprecArray,childsimArray,popSize1] = recombination(population,genArray,compArray,precArray,simArray,pool,gen1Array,comp1Array,prec1Array,sim1Array,popSize,n);
+       %toc
+       
+        %tic
+        %disp('......... nonDominatedSort ............');
+       [rank,Front,frontGen,frontComp,frontPrec,frontSim,frontCountArr,frontCount] = nonDominatedSort(childpop,childgenArray,childcompArray,childprecArray,childsimArray,popSize1,L,row,col,n);
+        %toc        
+            currentGen=[];
+            currentComp=[];
+            currentPrec=[];
+            currentSim=[];
+            ind=1;
+           
+            for j=1:frontCountArr(1)
+                %to check if front have any duplicate individual,to keep
+                %only different individuals in the front.
+                
+                if (any(currentGen==frontGen(1,j))==0)||(any(currentComp==frontComp(1,j))==0)||(any(currentPrec==frontPrec(1,j))==0)||(any(currentSim==frontSim(1,j))==0)
+                    
+                    currentGen(ind)=frontGen(1,j);
+                    currentComp(ind)=frontComp(1,j);
+                    currentPrec(ind)=frontPrec(1,j);
+                    currentSim(ind)=frontSim(1,j);
+                    ind=ind+1;                   
+                end
+            end
+            
+            
+            %tic
+            %disp('......... crowding_distance ............');
+            [nextPopulation,nextRank,crowdingDistance,nextGen,nextComp,nextPrec,nextSim] = crowding_distance(Front,frontGen,frontComp,frontPrec,frontSim,frontCount,frontCountArr,2*popSize,childpop,n);
+            %toc
+            
+           
+            population=nextPopulation;
+            genArray=nextGen;
+            compArray=nextComp;
+            precArray=nextPrec;
+            simArray=nextSim;
+            %disp('... before sort ...');
+            [a,ind1]=sort(currentComp,'descend');
+            currentComp=currentComp(ind1);
+            currentGen=currentGen(ind1);
+            currentPrec=currentPrec(ind1);
+            currentSim=currentSim(ind1); 
+            currentComp;
+            currentGen;
+            currentPrec;
+            currentSim;
+            
+            % stopping criteria if non-dominated solution of previous iteration is
+    % same as current iteration and coutn>5 stop iterations.
+            
+                if isequal(currentSim,prevSim) == 1 && isequal(currentComp,prevComp) == 1 && isequal(currentGen,prevGen) == 1 && isequal(currentPrec,prevPrec) == 1 
+                    count = count+1;
+                else
+                    count=0;
+                end
+                if count>=5
+                      break
+                end
+            
+            %prevFront=currentFront;
+            prevGen=currentGen;
+            prevComp=currentComp;
+            prevPrec=currentPrec;
+            prevSim=currentSim;
+            i;
+            %disp('----------------------------------------------------------------------------');            
+     
+     
+     fig1= scatter3(currentComp,currentGen,currentPrec);% to plot the points of each iterations
+    hold on % to hold the output till last iteration
+    xlabel('Completeness')
+    ylabel('Generalization')
+    zlabel('Preciseness')
+     saveas(fig1,'/home/nk/Desktop/SONIA/DEMO/results/file1/file1.jpg')
+     fig2= scatter3(currentComp,currentGen,currentSim);% to plot the points of each iterations
+    hold on % to hold the output till last iteration
+    xlabel('Completeness')
+    ylabel('Generalization')
+    zlabel('Simplicity')
+     saveas(fig2,'/home/nk/Desktop/SONIA/DEMO/results/file1/file2.jpg')
+     fig3= scatter3(currentComp,currentPrec,currentSim);% to plot the points of each iterations
+    hold on % to hold the output till last iteration
+    xlabel('Completeness')
+    ylabel('Preciseness')
+    zlabel('Simplicity')
+     saveas(fig3,'/home/nk/Desktop/SONIA/DEMO/results/file1/file3.jpg')
+     fig4= scatter3(currentPrec,currentSim,currentGen);% to plot the points of each iterations
+    hold on % to hold the output till last iteration
+    xlabel('Preciseness')
+    ylabel('Simplicity')
+    zlabel('Generalization')
+     saveas(fig4,'/home/nk/Desktop/SONIA/DEMO/results/file1/file4.jpg')  
+    
+     
+       end       
+        toc 
+        
+        m
+       currentComp
+     currentGen
+     currentPrec
+     currentSim
+        
+        iterArray(r)=m ;
+        timeArray(r)=toc;      
+   
+    end
+    
+     iterArray
+    timeArray 
+       
+    end
+        
+  
+   

@@ -1,0 +1,10 @@
+function sim = simplicity(C,n)
+%C=[0 1 1 0 1;0 0 1 1 0;0 1 0 1 0;0 0 0 0 0;0 0 0 1 0]
+%n=5
+simp=zeros(1,n);
+parfor i=1:n
+    simp(i)=sum(C(i,:))+sum(C(:,i));
+end
+cardinality=sum(simp);
+sim=1/cardinality;
+end

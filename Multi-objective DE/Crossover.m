@@ -1,0 +1,45 @@
+function poolNew = Crossover(pool,n,populationSize)
+%{
+    This function calculates crossover for two matrices - C1 and C2 .
+    The offsprings Child_1 and Child_2 are returned.
+%}
+    poolNew=zeros(n,n,populationSize);
+    PoolNew=zeros(n,n,populationSize);
+    for a=1:populationSize
+        r= randi(populationSize);
+        PoolNew(:,:,a)= pool(:,:,r);
+    end
+    a=1;
+    for b=1:populationSize/2
+        r1 = randi(populationSize);
+
+        r2 = randi(populationSize);
+
+        C1=PoolNew(:,:,r1);
+        C2=PoolNew(:,:,r2);
+
+        crossOverPoint = randi(n);          % to generate random numbers between 1 to n
+                                            % this will be our crossover point
+
+        Child_1=C1;
+        Child_2=C2;
+        for i=1:n
+            if Child_1(crossOverPoint,i) ~= Child_2(crossOverPoint,i)     % swapping of outputs
+                temp=Child_1(crossOverPoint,i);
+                Child_1(crossOverPoint,i)=Child_2(crossOverPoint,i);
+                Child_2(crossOverPoint,i)=temp;
+            end
+
+            if Child_1(i,crossOverPoint) ~= Child_2(i,crossOverPoint)     %swapping of inputs
+                temp=Child_1(i,crossOverPoint);
+                Child_1(i,crossOverPoint)=Child_2(i,crossOverPoint);
+                Child_2(i,crossOverPoint)=temp;
+            end
+        end
+        
+        poolNew(:,:,a)= Child_1;
+        a=a+1;
+        poolNew(:,:,a)= Child_2;
+        a=a+1;
+    end
+end
